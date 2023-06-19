@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unescaped-entities */
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 import { copy, linkIcon, loader, tick } from "../assets";
 import { useLazyGetSummaryQuery } from "../services/article";
@@ -13,7 +13,7 @@ const Demo = () => {
   const [copied, setCopied] = useState("");
 
   // RTK lazy query
-  const [getSummary, { error, isFetching }] = useLazyGetSummaryQuery();
+  const [getSummary, { error, isLoading }] = useLazyGetSummaryQuery();
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -51,7 +51,7 @@ const Demo = () => {
   const handleCopy = (copyUrl) => {
     setCopied(copyUrl);
     navigator.clipboard.writeText(copyUrl);
-    setTimeout(() => setCopied(false), 3000);
+    setTimeout(() => setCopied(""), 3000);
   };
 
   const handleKeyDown = (e) => {
@@ -85,7 +85,7 @@ const Demo = () => {
           />
           <button
             type="submit"
-            className="submit_btn peer-focus:border-gray-700 peer-focus:text-gray-700 "
+            className="submit_btn peer-focus:border-gray-700 peer-focus:text-gray-700"
           >
             <p>↵</p>
           </button>
@@ -93,30 +93,33 @@ const Demo = () => {
 
         {/* Browse History */}
         <div className="flex flex-col gap-1 max-h-60 overflow-y-auto">
-          {allArticles.reverse().map((item, index) => (
-            <div
-              key={`link-${index}`}
-              onClick={() => setArticle(item)}
-              className="link_card"
-            >
-              <div className="copy_btn" onClick={() => handleCopy(item.url)}>
-                <img
-                  src={copied === item.url ? tick : copy}
-                  alt={copied === item.url ? "tick_icon" : "copy_icon"}
-                  className="w-[40%] h-[40%] object-contain"
-                />
+          {allArticles
+            .slice(0) // Create a new copy of the array to avoid modifying the state directly
+            .reverse()
+            .map((item, index) => (
+              <div
+                key={`link-${index}`}
+                onClick={() => setArticle(item)}
+                className="link_card"
+              >
+                <div className="copy_btn" onClick={() => handleCopy(item.url)}>
+                  <img
+                    src={copied === item.url ? tick : copy}
+                    alt={copied === item.url ? "tick_icon" : "copy_icon"}
+                    className="w-[40%] h-[40%] object-contain"
+                  />
+                </div>
+                <p className="flex-1 font-satoshi text-blue-700 font-medium text-sm truncate">
+                  {item.url}
+                </p>
               </div>
-              <p className="flex-1 font-satoshi text-blue-700 font-medium text-sm truncate">
-                {item.url}
-              </p>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
 
       {/* Display Result */}
       <div className="my-10 max-w-full flex justify-center items-center">
-        {isFetching ? (
+        {isLoading ? (
           <img src={loader} alt="loader" className="w-20 h-20 object-contain" />
         ) : error ? (
           <p className="font-inter font-bold text-black text-center">
